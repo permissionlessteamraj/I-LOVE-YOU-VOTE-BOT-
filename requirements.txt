@@ -1,2 +1,2 @@
-python-telegram-bot==20.x
-imgurpython
+python-telegram-bot==20.x imgurpython
+
