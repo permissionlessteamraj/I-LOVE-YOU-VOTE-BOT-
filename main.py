@@ -6,8 +6,9 @@ import time
 from datetime import datetime, timedelta
 import random
 
+# Make sure you have a config.py file with these variables
 from config import TOKEN, ADMIN_ID, CHANNEL_ID, BOT_USERNAME, WELCOME_IMAGE_URL
-from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup, ParseMode, InputFile
+from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup, ParseMode, InputFile, InlineQueryResultArticle, InputTextMessageContent
 from telegram.ext import (
     Application,
     CommandHandler,
@@ -446,8 +447,22 @@ async def kick_user(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await update.message.reply_text(f"Could not kick user. Error: {e}")
 
 async def ban_user(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    # Same logic as kick, but with different command
-    pass
+    if not update.effective_chat.type in ['group', 'supergroup']:
+        await update.message.reply_text("This command can only be used in a group.")
+        return
+    admins = await context.bot.get_chat_administrators(update.effective_chat.id)
+    if update.effective_user.id not in [admin.user.id for admin in admins]:
+        await update.message.reply_text("You must be an admin to use this command.")
+        return
+    if not update.message.reply_to_message:
+        await update.message.reply_text("Please reply to a user's message to ban them.")
+        return
+    user_to_ban = update.message.reply_to_message.from_user
+    try:
+        await context.bot.ban_chat_member(update.effective_chat.id, user_to_ban.id)
+        await update.message.reply_text(f"Banned {user_to_ban.full_name}.")
+    except Exception as e:
+        await update.message.reply_text(f"Could not ban user. Error: {e}")
 
 async def mute_user(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if not update.effective_chat.type in ['group', 'supergroup']:
