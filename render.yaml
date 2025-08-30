@@ -16,5 +16,3 @@ services:
         sync: false
       - key: WELCOME_IMAGE_URL
         value: "https://your-image-hosting-service.com/welcome_image.png"
-        sync: false
-
